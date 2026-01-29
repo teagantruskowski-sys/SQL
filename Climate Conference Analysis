@@ -1,0 +1,75 @@
+SELECT * FROM vips LIMIT 5;
+
+-- 1. [LEFT JOIN] List all members and the names of the people they provide feedback to. Include members even if they don't provide feedback to anyone.
+
+SELECT
+    giver.first_name,
+    giver.last_name,
+    receiver.first_name,
+    receiver.last_name
+FROM vips AS giver
+LEFT JOIN vips AS receiver
+ON giver.provides_feedback_to = receiver.member_id;
+
+--2. [INNER JOIN] List the names of all VIPs who have a hotel reservation, along with the name of the hotel they are staying at.
+
+SELECT 
+    vips.first_name, 
+    vips.last_name, 
+    hotels.hotel_name
+FROM vips
+INNER JOIN reservations 
+    ON vips.member_id = reservations.member_id
+INNER JOIN hotels 
+    ON reservations.hotel = hotels.hotel_id;
+    
+--3. [MULTIPLE JOINS] List of every VIP's full name, the name of the hotel they are staying at, and the name of the event they are attending.
+
+SELECT 
+    vips.first_name, 
+    vips.last_name, 
+    events.event_name, 
+    hotels.hotel_name
+FROM vips
+LEFT JOIN events 
+    ON vips.event = events.event_id
+LEFT JOIN reservations 
+    ON vips.member_id = reservations.member_id
+LEFT JOIN hotels 
+    ON reservations.hotel = hotels.hotel_id;
+    
+-- 4. [SELF JOIN] Which members work for the same association? List pairs of members who are colleagues.
+
+SELECT 
+    a.first_name AS member_1, 
+    b.first_name AS member_2, 
+    a.association
+FROM vips AS a
+INNER JOIN vips AS b 
+    ON a.association = b.association
+WHERE a.member_id < b.member_id;
+
+--5. [SUBQUERY] Which members joined the organization in the same year as 'Jiho Kim'?
+
+SELECT 
+    first_name, 
+    last_name, 
+    member_since
+FROM vips
+WHERE member_since = (
+    SELECT member_since 
+    FROM vips 
+    WHERE first_name = 'Jiho' AND last_name = 'Kim');
+    
+--6. [RIGHT JOIN] List all hotel names and the VIPs staying in them. Include hotels even if no VIPs have booked them yet.
+
+SELECT 
+    vips.first_name, 
+    vips.last_name, 
+    hotels.hotel_name
+FROM vips
+RIGHT JOIN hotels 
+    ON vips.member_id = (
+        SELECT member_id 
+        FROM reservations 
+        WHERE reservations.hotel = hotels.hotel_id);
